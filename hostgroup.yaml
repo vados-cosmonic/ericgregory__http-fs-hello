@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    wasmcloud.com/hostgroup: public-ingress
+    wasmcloud.com/name: hostgroup
+  name: hostgroup-public-ingress
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      wasmcloud.com/hostgroup: public-ingress
+      wasmcloud.com/name: hostgroup
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        wasmcloud.com/hostgroup: public-ingress
+        wasmcloud.com/name: hostgroup
+    spec:
+      volumes:
+        - name: wasmcloud-data
+          hostPath:
+            path: "/var/samples" # Mounting the host's local samples directory
+      containers:
+      - args:
+        - host
+        - --host-group=public-ingress
+        - --scheduler-nats-url=nats://nats:4222
+        - --data-nats-url=nats://nats:4222
+        - --http-addr=0.0.0.0:9191
+        - --wasi-webgpu
+        image: ghcr.io/wasmcloud/wash:2.0.0-rc.3
+        imagePullPolicy: Always
+        name: host
+        ports:
+        - containerPort: 9191
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
+        volumeMounts:
+        - mountPath: /var/samples
+          name: wasmcloud-data
+        securityContext:
+          capabilities:
+            drop:
+            - NET_RAW
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: wasmcloud-runtime-operator-runtime
+      serviceAccountName: wasmcloud-runtime-operator-runtime
+      terminationGracePeriodSeconds: 0

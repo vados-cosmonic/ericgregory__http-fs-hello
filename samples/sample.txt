@@ -1,0 +1,3 @@
+Hello from WASI Filesystem!
+This file is being read using the preopen interface.
+WASI allows WebAssembly modules to access files securely.

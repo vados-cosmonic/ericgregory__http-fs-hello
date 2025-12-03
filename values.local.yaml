@@ -1,0 +1,47 @@
+runtime:
+  image:
+    registry: ghcr.io
+    repository: wasmcloud/wash
+    pull_policy: Always
+    tag: "2.0.0-rc.3"
+  hostGroups:
+    - name: public-ingress
+      replicas: 1
+      service:
+        type: NodePort
+      webgpu:
+        enabled: true
+      http:
+        enabled: true
+        port: 80
+        nodePort: 30950
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m" # 0.25 CPU cores
+        limits:
+          memory: "512Mi"
+          cpu: "500m" # 0.5 CPU cores
+    - name: private-ingress
+      replicas: 1
+      service:
+        type: ClusterIP
+      http:
+        enabled: true
+        port: 80
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m" # 0.25 CPU cores
+        limits:
+          memory: "512Mi"
+          cpu: "500m" # 0.5 CPU cores
+    - name: default
+      replicas: 1
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m" # 0.25 CPU cores
+        limits:
+          memory: "512Mi"
+          cpu: "500m" # 0.5 CPU cores

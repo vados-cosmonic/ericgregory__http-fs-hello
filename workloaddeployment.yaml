@@ -1,0 +1,28 @@
+apiVersion: runtime.wasmcloud.dev/v1alpha1
+kind: WorkloadDeployment
+metadata:
+  name: http-fs-hello
+spec:
+  replicas: 1
+  template:
+    spec:
+      hostSelector:
+        hostgroup: public-ingress
+      volumes:
+        - name: wasmcloud-data
+          hostPath:
+            path: /var/samples
+      components:
+        - name: http-fs-hello
+          image: ghcr.io/ericgregory/http-fs-hello:0.1.0
+          localResources:
+            volumeMounts:
+              - name: wasmcloud-data
+                mountPath: /
+      hostInterfaces:
+        - namespace: wasi
+          package: http
+          interfaces:
+            - incoming-handler
+          config:
+            host: localhost
